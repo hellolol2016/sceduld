@@ -1,60 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 let numtodo = 0;
 
 
 function TodosComponent() {
+  //declares new state variables by using useState
   const [currentTodo, setCurrentTodo] = useState("");
-  const [todos, setTodos] = useState([
-    {
-      todo: "bake a cake",
-      isCompleted: true
-    },
-    {
-      todo: "go for a walk",
-      isCompleted: false
-    },
-    {
-      todo: "contribute a web development tutorial on Enlight",
-      isCompleted: false
-    }
-  ]);
+  //updates state var
+  const [todos, setTodos] = useState([]);
 
+  useEffect(() => {
+    const todoList = localStorage.getItem('todoList');
+    console.log(todoList);
+    const todoData = JSON.parse(todoList);
+    setTodos(todoData);
+    //[] makes it so useEffect only activates once after reloading
+  }, [] );
+
+  //function that creates new todos and pushes to the list
   function createNewTodo(currentTodo) {
+    if (todos != null) {
       let todosArray = [...todos];
+      //pushes new objects with boolean var isCompleted
       todosArray.push({
           todo: currentTodo,
           isCompleted: false
       });
+      const todosArrayData = JSON.stringify(todosArray);
+      localStorage.setItem('todoList', todosArrayData);
+
+      //update todos array by setTodos
       setTodos(todosArray);
-  }
+    }   else {
+      let firstTodo = [{
+        todo: currentTodo,
+        isCompleted: false
+      }];
+      setTodos(firstTodo);
+      localStorage.setItem('todoList', JSON.stringify(firstTodo));
+    }
+  };
 
   function completeTodo(index) {
+    //makes copy of todos array using ellipses???
     const todosArray = [...todos];
+    //set isCompleted var oppositite with !
     todosArray[index].isCompleted = !todosArray[index].isCompleted;
+    //update todos
     setTodos(todosArray);
-  }
+  };
 
   function deleteTodo(index) {
     let todosArray = [...todos];
     todosArray.splice(index, 1);
     setTodos(todosArray);
-  }
 
-  function todoSaver(){
-    if(typeof(Storage) !== "undefined"){
-      let todosArray = [...todos];
-      localStorage.setItem(numtodo, currentTodo)
-      localStorage.setItem("isCompleted", false);
-      numtodo = numtodo + 1;
-    }
-  }
+    const todosArrayData = JSON.stringify(todosArray);
+    localStorage.setItem('todoList', todosArrayData);
+  };
   
 
   return (
     <div>
+
       <input
         className="todo-input"
         value={currentTodo}
+        //when input box is changed, set current todo value to the values inputted
         onChange={e => {
             setCurrentTodo(e.target.value);
         }}
@@ -62,25 +73,26 @@ function TodosComponent() {
         onKeyPress={e => {
             if (e.key === "Enter") {
                 createNewTodo(currentTodo);
-                todoSaver(currentTodo);
-                numtodo = numtodo + 1;
                 setCurrentTodo("");
             }
         }}
       placeholder="What needs to get done?"
     />
-     {todos.map((todo,index) => (
-        <div key={todo} className="todo">
-          <div className="checkbox" onClick={() => completeTodo(index)}>
-           {todo.isCompleted && <span>&#x2714;</span>}
+    {
+      todos && todos !== undefined && todos.map((todo,index) => (
+        <div key = {todo} className = "todo">
+          <div className = "checkbox" onClick = {() => completeTodo(index)}>
+            {todo.isCompleted && <span><img alt = "checkmark" src="https://img.icons8.com/cotton/30/000000/successfully-completed-task--v1.png"/></span>}
           </div>
-          <div className={todo.isCompleted ? "done" : ""}>{todo.todo}</div>
-          <div className="delete" onClick={() => deleteTodo(index)}>
-            &#128465;
+          <div className = {todo.isCompleted ? "done" : ""}>
+            {todo.todo}
+          </div>
+          <div className = "delete" onClick = {() => deleteTodo(index)}>
+            <div>&#128465;</div>
           </div>
         </div>
-      ))}
-      {todos.length > 0 && `${todos.length} items`}
+      ))
+    }
     </div>
   );
 }
