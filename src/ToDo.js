@@ -1,5 +1,4 @@
 import React, { useState, useEffect} from "react";
-let numtodo = 0;
 
 
 function TodosComponent() {
